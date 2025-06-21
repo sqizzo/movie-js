@@ -36,7 +36,7 @@ export const updateSearchCount = async (searchTerm, movie) => {
       });
     }
   } catch (error) {
-    console.log(error);
+    return error;
   }
 };
 
@@ -47,8 +47,8 @@ export const getTrendingMovies = async () => {
       Query.orderDesc("count"),
     ]);
 
-    return result.documents;
+    return result?.documents || null;
   } catch (error) {
-    console.log(error);
+    throw new Error("Failed to fetch");
   }
 };

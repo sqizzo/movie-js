@@ -4,12 +4,15 @@ import Spinner from "./components/Spinner.jsx";
 import MovieCard from "./components/MovieCard.jsx";
 import { useDebounce } from "react-use";
 import { getTrendingMovies, updateSearchCount } from "./appwrite.js";
+import TrendingMovie from "./components/TrendingMovie.jsx";
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [trendingErrorMsg, setTrendingErrorMsg] = useState("");
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingTrending, setIsLoadingTrending] = useState(false);
   const [debounceSearchTerm, setDebounceSearchTerm] = useState("");
   const [trendingMovies, setTrendingMovies] = useState([]);
 
@@ -52,15 +55,9 @@ const App = () => {
         if (query && data.results.length > 0) {
           await updateSearchCount(query, data.results[0]);
         }
-
-        // const trendingMoviesResult = await getTrendingMovies();
-        // setTrendingMovies(trendingMoviesResult);
-        // console.log(trendingMovies);
       }
     } catch (error) {
-      setErrorMsg(
-        `Error fetching movies. Please try again later: ${error.message}`
-      );
+      setErrorMsg(`Error fetching movies: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -78,15 +75,25 @@ const App = () => {
   useEffect(() => {
     // load the trending movies asynchronously
     const loadTrendingMovies = async () => {
+      setIsLoadingTrending(true);
+
       try {
         const loadedTrendingMovies = await getTrendingMovies();
         setTrendingMovies(loadedTrendingMovies);
       } catch (error) {
-        console.log("Error fetching trending movies");
+        setTrendingErrorMsg(
+          `Error fetching trending movies: ${error.message} `
+        );
+      } finally {
+        setIsLoadingTrending(false);
       }
     };
     loadTrendingMovies();
   }, []);
+
+  useEffect(() => {
+    console.log(trendingErrorMsg);
+  }, [trendingErrorMsg]);
 
   return (
     <main>
@@ -103,26 +110,15 @@ const App = () => {
 
           <section className="trending mt-14">
             <h2 className="mb-8">Trending Movies</h2>
-            {trendingMovies.length > 0 ? (
+            {isLoadingTrending ? (
+              <Spinner />
+            ) : trendingErrorMsg ? (
+              <p className="text-red-500 text-center">{trendingErrorMsg}</p>
+            ) : trendingMovies.length > 0 ? (
               <ul>
                 {trendingMovies.map((movie, index) => {
                   return (
-                    <div className="trending-box" key={movie.$id}>
-                      <li className="trending-box-header">
-                        <p>{index + 1}</p>
-                        <span>
-                          <img
-                            src={
-                              movie.poster_url.split("/").at(-1) != "null"
-                                ? movie.poster_url
-                                : "/no-movie.png"
-                            }
-                            alt={`trending poster ${index + 1}`}
-                          />
-                        </span>
-                      </li>
-                      <p className="text-white text-center">{movie.title}</p>
-                    </div>
+                    <TrendingMovie movie={movie} key={index} index={index} />
                   );
                 })}
               </ul>
@@ -139,7 +135,7 @@ const App = () => {
             {isLoading ? (
               <Spinner />
             ) : errorMsg ? (
-              <p className="text-red-500">{errorMsg}</p>
+              <p className="text-red-500 text-center">{errorMsg}</p>
             ) : (
               <ul>
                 {movies.length > 0 ? (

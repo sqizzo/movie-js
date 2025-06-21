@@ -64,15 +64,15 @@
       @apply flex flex-row overflow-y-auto gap-5 -mt-10 w-full hide-scrollbar;
     }
 
-    & .trending-box-header {
+    & .trending-movie-top {
       @apply min-w-[230px] flex flex-row items-center justify-center mt-4;
     }
 
-    & .trending-box-header p {
+    & .trending-movie-top p {
       @apply fancy-text mt-[22px] text-nowrap leading-none;
     }
 
-    & .trending-box-header img {
+    & .trending-movie-top img {
       @apply w-[127px] h-[163px] rounded-lg object-cover -ml-3.5;
     }
   }
