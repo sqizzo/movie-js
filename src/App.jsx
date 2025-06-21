@@ -3,6 +3,7 @@ import Search from "./components/Search.jsx";
 import Spinner from "./components/Spinner.jsx";
 import MovieCard from "./components/MovieCard.jsx";
 import { useDebounce } from "react-use";
+import { updateSearchCount } from "./appwrite.js";
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,6 +48,9 @@ const App = () => {
         }
 
         setMovies(data.results || []);
+        if (query && data.results.length > 0) {
+          await updateSearchCount(query, data.results[0]);
+        }
       }
     } catch (error) {
       setErrorMsg(
