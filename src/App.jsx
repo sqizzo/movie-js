@@ -3,7 +3,7 @@ import Search from "./components/Search.jsx";
 import Spinner from "./components/Spinner.jsx";
 import MovieCard from "./components/MovieCard.jsx";
 import { useDebounce } from "react-use";
-import { updateSearchCount } from "./appwrite.js";
+import { getTrendingMovies, updateSearchCount } from "./appwrite.js";
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -11,6 +11,7 @@ const App = () => {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [debounceSearchTerm, setDebounceSearchTerm] = useState("");
+  const [trendingMovies, setTrendingMovies] = useState([]);
 
   const API_BASE_URL = "https://api.themoviedb.org/3";
   const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -51,6 +52,10 @@ const App = () => {
         if (query && data.results.length > 0) {
           await updateSearchCount(query, data.results[0]);
         }
+
+        // const trendingMoviesResult = await getTrendingMovies();
+        // setTrendingMovies(trendingMoviesResult);
+        // console.log(trendingMovies);
       }
     } catch (error) {
       setErrorMsg(
@@ -61,13 +66,27 @@ const App = () => {
     }
   };
 
-  // only run this at the start
+  // runs everytime user search the movie
   useEffect(() => {
     // debounce hook will watch over the search term changes and only update it's stored value when user stop typing for specific period of time
     // use that stored value to pass as a search query and the use effect dependency
     fetchMovies(debounceSearchTerm);
     // console.log(debounceSearchTerm);
   }, [debounceSearchTerm]);
+
+  // only run this at the start
+  useEffect(() => {
+    // load the trending movies asynchronously
+    const loadTrendingMovies = async () => {
+      try {
+        const loadedTrendingMovies = await getTrendingMovies();
+        setTrendingMovies(loadedTrendingMovies);
+      } catch (error) {
+        console.log("Error fetching trending movies");
+      }
+    };
+    loadTrendingMovies();
+  }, []);
 
   return (
     <main>
@@ -82,7 +101,39 @@ const App = () => {
             <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
           </header>
 
-          <section className="all-movies mt-10">
+          <section className="trending mt-14">
+            <h2 className="mb-8">Trending Movies</h2>
+            {trendingMovies.length > 0 ? (
+              <ul>
+                {trendingMovies.map((movie, index) => {
+                  return (
+                    <div className="trending-box" key={movie.$id}>
+                      <li className="trending-box-header">
+                        <p>{index + 1}</p>
+                        <span>
+                          <img
+                            src={
+                              movie.poster_url.split("/").at(-1) != "null"
+                                ? movie.poster_url
+                                : "/no-movie.png"
+                            }
+                            alt={`trending poster ${index + 1}`}
+                          />
+                        </span>
+                      </li>
+                      <p className="text-white text-center">{movie.title}</p>
+                    </div>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="text-white text-center">
+                No information about the current trending movies :(
+              </p>
+            )}
+          </section>
+
+          <section className="all-movies mt-14">
             <h2>All Movies</h2>
 
             {isLoading ? (

@@ -64,15 +64,15 @@
       @apply flex flex-row overflow-y-auto gap-5 -mt-10 w-full hide-scrollbar;
     }
 
-    & ul li {
-      @apply min-w-[230px] flex flex-row items-center;
+    & .trending-box-header {
+      @apply min-w-[230px] flex flex-row items-center justify-center mt-4;
     }
 
-    & ul li p {
-      @apply fancy-text mt-[22px] text-nowrap;
+    & .trending-box-header p {
+      @apply fancy-text mt-[22px] text-nowrap leading-none;
     }
 
-    & ul li img {
+    & .trending-box-header img {
       @apply w-[127px] h-[163px] rounded-lg object-cover -ml-3.5;
     }
   }
