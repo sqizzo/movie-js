@@ -22,6 +22,7 @@ const App = () => {
   };
 
   // Debounce search to minimize api calls
+  useDebounce(() => setDebounceSearchTerm(searchTerm), 650, [searchTerm]);
 
   const fetchMovies = async (query = "") => {
     setIsLoading(true);
@@ -58,8 +59,11 @@ const App = () => {
 
   // only run this at the start
   useEffect(() => {
-    fetchMovies(searchTerm);
-  }, [searchTerm]);
+    // debounce hook will watch over the search term changes and only update it's stored value when user stop typing for specific period of time
+    // use that stored value to pass as a search query and the use effect dependency
+    fetchMovies(debounceSearchTerm);
+    // console.log(debounceSearchTerm);
+  }, [debounceSearchTerm]);
 
   return (
     <main>
