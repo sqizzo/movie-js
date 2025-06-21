@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Search from "./components/Search.jsx";
+import Spinner from "./components/Spinner.jsx";
+import MovieCard from "./components/MovieCard.jsx";
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -66,21 +68,19 @@ const App = () => {
             <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
           </header>
 
-          <section className="all-movies">
+          <section className="all-movies mt-10">
             <h2>All Movies</h2>
 
             {isLoading ? (
-              <p className="text-white">Loading...</p>
+              <p className="text-white">
+                <Spinner />
+              </p>
             ) : errorMsg ? (
               <p className="text-red-500">{errorMsg}</p>
             ) : (
               <ul>
                 {movies.map((movie) => {
-                  return (
-                    <p className="text-white" key={movie.id}>
-                      {movie.title}
-                    </p>
-                  );
+                  return <MovieCard key={movie.id} movie={movie} />;
                 })}
               </ul>
             )}
