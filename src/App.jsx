@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import Search from "./components/Search.jsx";
 import Spinner from "./components/Spinner.jsx";
 import MovieCard from "./components/MovieCard.jsx";
+import { useDebounce } from "react-use";
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [debounceSearchTerm, setDebounceSearchTerm] = useState("");
 
   const API_BASE_URL = "https://api.themoviedb.org/3";
   const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -19,12 +21,16 @@ const App = () => {
     },
   };
 
-  const fetchMovies = async () => {
+  // Debounce search to minimize api calls
+
+  const fetchMovies = async (query = "") => {
     setIsLoading(true);
     setErrorMsg("");
 
     try {
-      const endpoint = `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
+      const endpoint = query
+        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
+        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
 
       const response = await fetch(endpoint, API_OPTIONS);
 
@@ -52,8 +58,8 @@ const App = () => {
 
   // only run this at the start
   useEffect(() => {
-    fetchMovies();
-  }, []);
+    fetchMovies(searchTerm);
+  }, [searchTerm]);
 
   return (
     <main>
@@ -72,16 +78,18 @@ const App = () => {
             <h2>All Movies</h2>
 
             {isLoading ? (
-              <p className="text-white">
-                <Spinner />
-              </p>
+              <Spinner />
             ) : errorMsg ? (
               <p className="text-red-500">{errorMsg}</p>
             ) : (
               <ul>
-                {movies.map((movie) => {
-                  return <MovieCard key={movie.id} movie={movie} />;
-                })}
+                {movies.length > 0 ? (
+                  movies.map((movie) => {
+                    return <MovieCard key={movie.id} movie={movie} />;
+                  })
+                ) : (
+                  <p className="text-white">Sadly, no movie was found :(</p>
+                )}
               </ul>
             )}
 
